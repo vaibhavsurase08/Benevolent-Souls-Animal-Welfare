@@ -1,0 +1,23 @@
+Benevolent Souls Foundation — Curated Media Integration Pack
+
+CONTENTS
+- public/image/ngo/community/: 14 non-graphic community/rescue photographs selected from the submitted batch.
+- public/videos/ngo-stories/: 5 non-graphic clips selected from preview frames.
+- app/gallery/page.tsx: complete Gallery page replacement that displays these photos plus the existing five non-graphic legacy photos and photos stored through Admin Media.
+- app/videos/page.tsx: complete Videos page replacement that displays these videos plus the existing three videos and videos stored through Admin Media.
+- MEDIA_ASSET_MAP.csv: original source filename, new project path, intended placement, and review notes.
+
+HOW TO INSTALL
+1. Download this ZIP and extract its contents into the ROOT of your Next.js project:
+   C:\Users\HP\Documents\animal-welfare-website
+2. When Windows asks whether to merge folders or replace app/gallery/page.tsx and app/videos/page.tsx, choose Yes / Replace.
+3. Confirm the new public folders were merged under your existing public folder; do not delete the old public/image/ngo or public/videos files.
+4. Run `npm run build`.
+5. If successful, run `npm run start` and check /gallery and /videos.
+
+IMPORTANT
+- The pack does not include graphic injury photos or the recovery/treatment clips in public/. These are in a separate review-only archive so they cannot accidentally be published by placing them under public/.
+- The preview frames are only partial previews, not full-video approval. Review full clips and get the NGO's permission before publishing any recovery content.
+- The image sent as a screenshot of a chat has been excluded as not website media.
+- A standalone portrait has been withheld from the public pack until the person's role and permission are confirmed.
+- Public use of volunteer/recipient images should be approved by the NGO.

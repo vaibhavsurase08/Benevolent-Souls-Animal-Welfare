@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Featured Story - Premium Gold Animation */
+
+.story-animated-bg {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(
+      ellipse at 20% 20%,
+      rgba(255, 201, 40, 0.22) 0%,
+      rgba(255, 201, 40, 0.05) 28%,
+      transparent 48%
+    ),
+    radial-gradient(
+      ellipse at 80% 70%,
+      rgba(195, 154, 0, 0.16) 0%,
+      rgba(195, 154, 0, 0.04) 30%,
+      transparent 50%
+    ),
+    linear-gradient(
+      125deg,
+      #f5f1e8 0%,
+      #eee5cd 45%,
+      #faf8f0 70%,
+      #eadcae 100%
+    );
+
+  background-size: 160% 160%;
+  animation: storyGoldFlow 12s ease-in-out infinite alternate;
+}
+
+@keyframes storyGoldFlow {
+  0% {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+    background-position: 0% 20%;
+  }
+
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.05);
+    background-position: 60% 55%;
+  }
+
+  100% {
+    transform: translate3d(-2%, 3%, 0) scale(1.02);
+    background-position: 100% 80%;
+  }
+}

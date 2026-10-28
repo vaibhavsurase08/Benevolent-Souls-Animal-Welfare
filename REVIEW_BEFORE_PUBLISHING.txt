@@ -1,0 +1,7 @@
+Benevolent Souls Foundation — Review-only media (DO NOT copy into public/ yet)
+
+This separate archive contains clips/photos withheld from automatic public display pending review. Several photo previews contain open wounds or close treatment; there is also a screenshot of a social story and a portrait whose role/permission is unconfirmed.
+
+Review the complete files with the NGO. Only after permission and selection, move approved files into public/ and add them to Gallery/Video Stories. Files in this archive are intentionally outside public/ so Next.js will not automatically serve them as public static assets if this archive is kept outside the project.
+
+Not copied: WhatsApp Image 2026-10-09 at 10.35.24 PM.jpeg — this is a screenshot of a chat/page, not original NGO photo/video media.
