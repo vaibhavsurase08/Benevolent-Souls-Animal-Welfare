@@ -4,13 +4,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-
 type DonationStatus = "pending" | "approved" | "rejected";
 type StatusFilter = DonationStatus | "all";
+type GraphPeriod = "weekly" | "monthly" | "yearly";
 
 type Donation = {
   id: number;
   created_at: string;
+  verified_at: string | null;
   donor_name: string | null;
   email: string | null;
   phone: string | null;
@@ -49,7 +50,11 @@ export default function AdminDonationsPage() {
   const [filterStatus, setFilterStatus] = useState<StatusFilter>("all");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [deleteTarget, setDeleteTarget] = useState<Donation | null>(null);
+  const [graphPeriod, setGraphPeriod] = useState<GraphPeriod>("weekly");
+  const [confirmation, setConfirmation] = useState<{
+    donation: Donation;
+    nextStatus: DonationStatus;
+  } | null>(null);
 
   useEffect(() => {
     if (localStorage.getItem("adminLoggedIn") !== "true") {
@@ -61,11 +66,15 @@ export default function AdminDonationsPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!successMessage) return;
+    if (!successMessage && !errorMessage) return;
 
-    const timer = window.setTimeout(() => setSuccessMessage(""), 5000);
+    const timer = window.setTimeout(() => {
+      setSuccessMessage("");
+      setErrorMessage("");
+    }, 5000);
+
     return () => window.clearTimeout(timer);
-  }, [successMessage]);
+  }, [successMessage, errorMessage]);
 
   const fetchDonations = useCallback(async () => {
     setLoading(true);
@@ -74,7 +83,7 @@ export default function AdminDonationsPage() {
     const { data, error } = await supabase
       .from("donations")
       .select(
-        "id, created_at, donor_name, email, phone, amount, payment_method, transaction_id, message, status"
+        "id, created_at, verified_at, donor_name, email, phone, amount, payment_method, transaction_id, message, status"
       )
       .order("created_at", { ascending: false });
 
@@ -130,71 +139,105 @@ export default function AdminDonationsPage() {
   }, [donations, filterStatus, searchQuery]);
 
   const chartData = useMemo(() => {
-    return Array.from({ length: 7 }, (_, index) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (6 - index));
-      date.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const periods =
+      graphPeriod === "weekly"
+        ? 7
+        : graphPeriod === "monthly"
+          ? 12
+          : 5;
+
+    return Array.from({ length: periods }, (_, index) => {
+      const date = new Date(now);
+
+      if (graphPeriod === "weekly") {
+        date.setDate(now.getDate() - (periods - 1 - index));
+        date.setHours(0, 0, 0, 0);
+      } else if (graphPeriod === "monthly") {
+        date.setDate(1);
+        date.setMonth(now.getMonth() - (periods - 1 - index));
+        date.setHours(0, 0, 0, 0);
+      } else {
+        date.setMonth(0, 1);
+        date.setFullYear(now.getFullYear() - (periods - 1 - index));
+        date.setHours(0, 0, 0, 0);
+      }
 
       const nextDate = new Date(date);
-      nextDate.setDate(nextDate.getDate() + 1);
+      if (graphPeriod === "weekly") {
+        nextDate.setDate(nextDate.getDate() + 1);
+      } else if (graphPeriod === "monthly") {
+        nextDate.setMonth(nextDate.getMonth() + 1);
+      } else {
+        nextDate.setFullYear(nextDate.getFullYear() + 1);
+      }
 
       const amount = donations
         .filter((donation) => {
-          const createdAt = new Date(donation.created_at);
-          return (
-            createdAt >= date &&
-            createdAt < nextDate &&
-            donation.status === "approved"
-          );
+          if (!donation.verified_at || donation.status !== "approved") {
+            return false;
+          }
+
+          const verifiedAt = new Date(donation.verified_at);
+          return verifiedAt >= date && verifiedAt < nextDate;
         })
         .reduce((total, donation) => total + Number(donation.amount ?? 0), 0);
 
-      return {
-        label: date.toLocaleDateString("en-IN", { weekday: "short" }),
-        date: date.toLocaleDateString("en-IN", {
+      let label = "";
+      let periodDate = "";
+
+      if (graphPeriod === "weekly") {
+        label = date.toLocaleDateString("en-IN", { weekday: "short" });
+        periodDate = date.toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "short",
-        }),
-        amount,
-      };
+        });
+      } else if (graphPeriod === "monthly") {
+        label = date.toLocaleDateString("en-IN", { month: "short" });
+        periodDate = date.toLocaleDateString("en-IN", {
+          month: "short",
+          year: "numeric",
+        });
+      } else {
+        label = date.toLocaleDateString("en-IN", { year: "numeric" });
+        periodDate = label;
+      }
+
+      return { label, date: periodDate, amount };
     });
-  }, [donations]);
+  }, [donations, graphPeriod]);
 
-  const maxChartAmount = Math.max(...chartData.map((day) => day.amount), 1);
+  const maxChartAmount = Math.max(...chartData.map((period) => period.amount), 1);
 
-  const graphPoints = chartData.map((day, index) => ({
-    ...day,
-    x: 5 + (index / 6) * 90,
-    y: 78 - (day.amount / maxChartAmount) * 58,
+  const graphPoints = chartData.map((period, index) => ({
+    ...period,
+    x: chartData.length === 1 ? 50 : 5 + (index / (chartData.length - 1)) * 90,
+    y: 78 - (period.amount / maxChartAmount) * 58,
   }));
 
-  const updateStatus = async (
-    donation: Donation,
-    nextStatus: DonationStatus
-  ) => {
-    if (donation.status === nextStatus) return;
+  const updateStatus = (donation: Donation, nextStatus: DonationStatus) => {
+    if (donation.status === nextStatus || updatingId === donation.id) return;
+    setConfirmation({ donation, nextStatus });
+  };
 
-    const action = nextStatus === "approved" ? "verify" : "reject";
+  const confirmStatusUpdate = async () => {
+    if (!confirmation) return;
 
-    const confirmed = window.confirm(
-      nextStatus === "approved"
-        ? `Have you independently confirmed receipt of ${formatRupees(
-            donation.amount
-          )} from ${donation.donor_name || "this donor"}? Only confirm if the payment is visible in the foundation's bank or UPI records.`
-        : `Reject the payment record for ${
-            donation.donor_name || "this donor"
-          }? Verify the details before continuing.`
-    );
+    const { donation, nextStatus } = confirmation;
+    const verifiedAt =
+      nextStatus === "approved" ? new Date().toISOString() : null;
 
-    if (!confirmed) return;
-
+    setConfirmation(null);
     setUpdatingId(donation.id);
     setErrorMessage("");
     setSuccessMessage("");
 
     const { data, error } = await supabase
       .from("donations")
-      .update({ status: nextStatus })
+      .update({
+        status: nextStatus,
+        verified_at: verifiedAt,
+      })
       .eq("id", donation.id)
       .eq("status", donation.status ?? "pending")
       .select("id, status")
@@ -213,7 +256,7 @@ export default function AdminDonationsPage() {
     setDonations((current) =>
       current.map((item) =>
         item.id === donation.id
-          ? { ...item, status: nextStatus }
+          ? { ...item, status: nextStatus, verified_at: verifiedAt }
           : item
       )
     );
@@ -227,36 +270,70 @@ export default function AdminDonationsPage() {
     setUpdatingId(null);
   };
 
-  const deleteDonation = async () => {
-    if (!deleteTarget) return;
-
-    const donationId = deleteTarget.id;
-    setErrorMessage("");
-
-    const { error } = await supabase
-      .from("donations")
-      .delete()
-      .eq("id", donationId);
-
-    if (error) {
-      console.error("Error deleting donation:", error);
-      setErrorMessage("Could not delete the donation. Check Supabase permissions.");
-      setDeleteTarget(null);
-      return;
-    }
-
-    setDonations((current) =>
-      current.filter((donation) => donation.id !== donationId)
-    );
-
-    setDeleteTarget(null);
-    setSuccessMessage("Donation record deleted.");
-  };
-
   const printReport = () => window.print();
 
   return (
     <main className="min-h-screen bg-[#FAF8F0] text-[#25283B]">
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: A4;
+            margin: 12mm;
+          }
+
+          body {
+            background: #ffffff !important;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+
+          body * {
+            visibility: hidden !important;
+          }
+
+          .print-report,
+          .print-report * {
+            visibility: visible !important;
+          }
+
+          .print-report {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+
+          .print-report h2 {
+            margin-bottom: 16px !important;
+          }
+
+          .print-report table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 10px !important;
+          }
+
+          .print-report th,
+          .print-report td {
+            border-bottom: 1px solid #25283B !important;
+            padding: 8px 6px !important;
+            text-align: left !important;
+            vertical-align: top !important;
+            color: #25283B !important;
+          }
+
+          .print-report thead {
+            display: table-header-group;
+          }
+
+          .print-report tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+        }
+      `}</style>
       <header className="bg-[#25283B] px-6 py-6 text-white lg:px-10 print:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div>
@@ -307,50 +384,121 @@ export default function AdminDonationsPage() {
         </div>
 
         {successMessage && (
-          <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+          <div
+            role="status"
+            className="fixed bottom-6 right-6 z-[100] w-[min(92vw,380px)] rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800 shadow-2xl print:hidden"
+          >
             {successMessage}
           </div>
         )}
 
         {errorMessage && (
-          <div role="alert" className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <div
+            role="alert"
+            className="fixed bottom-6 right-6 z-[100] w-[min(92vw,380px)] rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 shadow-2xl print:hidden"
+          >
             {errorMessage}
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 print:hidden">
           {[
-            { label: "Total Donations", value: String(stats.total) },
-            { label: "Pending", value: String(stats.pending) },
-            { label: "Verified", value: String(stats.approved) },
-            { label: "Rejected", value: String(stats.rejected) },
-            { label: "Verified Amount", value: formatRupees(stats.verifiedAmount) },
+            {
+              label: "Total Donations",
+              value: String(stats.total),
+              bgColor: "bg-blue-50",
+              borderColor: "border-blue-200",
+              textColor: "text-blue-600",
+            },
+            {
+              label: "Pending",
+              value: String(stats.pending),
+              bgColor: "bg-amber-50",
+              borderColor: "border-amber-200",
+              textColor: "text-amber-600",
+            },
+            {
+              label: "Verified",
+              value: String(stats.approved),
+              bgColor: "bg-emerald-50",
+              borderColor: "border-emerald-200",
+              textColor: "text-emerald-600",
+            },
+            {
+              label: "Rejected",
+              value: String(stats.rejected),
+              bgColor: "bg-rose-50",
+              borderColor: "border-rose-200",
+              textColor: "text-rose-600",
+            },
+            {
+              label: "Verified Amount",
+              value: formatRupees(stats.verifiedAmount),
+              bgColor: "bg-violet-50",
+              borderColor: "border-violet-200",
+              textColor: "text-violet-600",
+            },
           ].map((card) => (
-            <div key={card.label} className="rounded-xl border border-[#25283B]/10 bg-white p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
+            <div
+              key={card.label}
+              className={`${card.bgColor} ${card.borderColor} rounded-xl p-5 shadow-sm transition-all hover:shadow-md`}
+            >
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
                 {card.label}
               </p>
-              <p className="mt-3 break-words text-2xl font-bold">{card.value}</p>
+              <p className={`mt-3 break-words text-2xl font-bold ${card.textColor}`}>
+                {card.value}
+              </p>
             </div>
           ))}
         </div>
 
         <section className="mt-8 rounded-2xl border border-[#25283B]/10 bg-white p-5 shadow-sm sm:p-7 print:hidden">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-green-700">
-              Donation Analytics
-            </p>
-            <h2 className="mt-2 text-xl font-bold">Verified donations — last 7 days</h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Only donations marked verified are included in this chart.
-            </p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-green-700">
+                Donation Analytics
+              </p>
+              <h2 className="mt-2 text-xl font-bold">
+                {graphPeriod === "weekly"
+                  ? "Verified donations — last 7 days"
+                  : graphPeriod === "monthly"
+                    ? "Verified donations — last 12 months"
+                    : "Verified donations — last 5 years"}
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Only donations marked verified are included in this chart.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Choose graph time period">
+              {([
+                { value: "weekly", label: "Weekly" },
+                { value: "monthly", label: "Monthly" },
+                { value: "yearly", label: "Yearly" },
+              ] as const).map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={graphPeriod === option.value}
+                  onClick={() => setGraphPeriod(option.value)}
+                  className={`rounded-lg border px-4 py-2 text-xs font-bold transition-colors ${
+                    graphPeriod === option.value
+                      ? "border-[#25283B] bg-[#25283B] text-white"
+                      : "border-[#25283B]/20 bg-white text-[#25283B] hover:bg-[#FAF8F0]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="mt-6">
             <svg
               viewBox="0 0 100 85"
               role="img"
-              aria-label="Verified donation amounts over the last seven days"
+              aria-label={`Verified donation amounts for the ${graphPeriod} view`}
               className="h-64 w-full overflow-visible"
               preserveAspectRatio="none"
             >
@@ -390,7 +538,7 @@ export default function AdminDonationsPage() {
               ))}
             </svg>
 
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${graphPoints.length}, minmax(0, 1fr))` }}>
               {graphPoints.map((point) => (
                 <div key={point.date} className="text-center">
                   <p className="text-xs font-semibold">{point.label}</p>
@@ -538,13 +686,6 @@ export default function AdminDonationsPage() {
                         </button>
                       )}
 
-                      <button
-                        type="button"
-                        onClick={() => setDeleteTarget(donation)}
-                        className="rounded-lg border border-gray-300 px-4 py-2.5 text-xs font-bold hover:bg-gray-100"
-                      >
-                        Delete Record
-                      </button>
                     </div>
                   </article>
                 );
@@ -553,7 +694,7 @@ export default function AdminDonationsPage() {
           )}
         </section>
 
-        <section className="mt-10 hidden print:block">
+        <section className="print-report mt-10 hidden print:block">
           <h2 className="mb-4 text-xl font-bold">Donation Report</h2>
           <table className="w-full border-collapse text-left text-xs">
             <thead>
@@ -586,40 +727,75 @@ export default function AdminDonationsPage() {
         </section>
       </section>
 
-      {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 print:hidden">
-          <div
+      {confirmation && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#171927]/65 px-4 py-6 backdrop-blur-sm print:hidden"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setConfirmation(null);
+          }}
+        >
+          <section
             role="dialog"
             aria-modal="true"
-            aria-labelledby="delete-title"
-            className="w-full max-w-md rounded-xl bg-white p-7 shadow-xl"
+            aria-labelledby="donation-confirmation-title"
+            className="w-full max-w-md rounded-2xl border border-[#FFC928]/30 bg-[#FAF8F0] p-6 shadow-2xl sm:p-7"
           >
-            <h2 id="delete-title" className="text-xl font-bold">
-              Delete donation record?
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-gray-600">
-              This permanently deletes the selected record from the database.
-              This action cannot be undone.
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#FFC928]/20 text-2xl">
+              {confirmation.nextStatus === "approved" ? "✓" : "!"}
+            </div>
+
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8A6A00]">
+              Donation management
             </p>
-            <div className="mt-7 flex gap-3">
+            <h2
+              id="donation-confirmation-title"
+              className="mt-2 text-xl font-bold text-[#25283B]"
+            >
+              {confirmation.nextStatus === "approved"
+                ? "Verify this payment?"
+                : "Reject this payment?"}
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#25283B]/75">
+              {confirmation.nextStatus === "approved"
+                ? `Confirm that ${formatRupees(
+                    confirmation.donation.amount
+                  )} has been received from ${
+                    confirmation.donation.donor_name || "this donor"
+                  }. Only continue after checking the foundation's bank or UPI records.`
+                : `Are you sure you want to reject the payment record for ${
+                    confirmation.donation.donor_name || "this donor"
+                  }? Please verify the details before continuing.`}
+            </p>
+
+            <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={() => setDeleteTarget(null)}
-                className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm font-semibold"
+                onClick={() => setConfirmation(null)}
+                className="rounded-lg border border-[#25283B]/20 bg-white px-5 py-3 text-sm font-bold text-[#25283B] transition hover:bg-gray-100"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={() => void deleteDonation()}
-                className="flex-1 rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700"
+                onClick={() => void confirmStatusUpdate()}
+                className={`rounded-lg px-5 py-3 text-sm font-bold text-white transition hover:brightness-95 ${
+                  confirmation.nextStatus === "approved"
+                    ? "bg-green-700"
+                    : "bg-red-600"
+                }`}
               >
-                Confirm Delete
+                {confirmation.nextStatus === "approved"
+                  ? "Confirm Verification"
+                  : "Confirm Rejection"}
               </button>
             </div>
-          </div>
+          </section>
         </div>
       )}
+
     </main>
   );
 }
+

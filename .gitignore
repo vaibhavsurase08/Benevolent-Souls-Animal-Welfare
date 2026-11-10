@@ -46,3 +46,16 @@ errors.txt
 /videos/
 /public/public/
 *.bak
+!.env.example
+app/page_new.tsx
+app/page.txt
+build.log
+build_output.txt
+output.txt
+check-symbols.js
+enhance_donate.js
+fix-symbols.js
+fix-symbols.ps1
+insert-team2.ps1
+remove_block.py
+remove_footers_block.js

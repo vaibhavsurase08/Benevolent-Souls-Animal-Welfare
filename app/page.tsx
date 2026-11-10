@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useLanguage, type SiteLanguage } from "./components/LanguageProvider";
@@ -47,6 +47,7 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [showEmergencyPopup, setShowEmergencyPopup] = useState(false);
+  const [selectedTeamImage, setSelectedTeamImage] = useState<{ src: string; alt: string } | null>(null);
   const [adoptionName, setAdoptionName] = useState("");
   const [adoptionEmail, setAdoptionEmail] = useState("");
   const [adoptionPhone, setAdoptionPhone] = useState("");
@@ -167,7 +168,19 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#FAF8F0] text-[#20222B]">
+    <>
+      <style jsx global>{`
+        html {
+          scroll-behavior: smooth;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          html {
+            scroll-behavior: auto;
+          }
+        }
+      `}</style>
+      <main className="min-h-screen overflow-x-hidden bg-[#FAF8F0] text-[#20222B]">
 
       {/* =====================================================
           HERO
@@ -289,13 +302,11 @@ export default function Home() {
               className="flex items-center gap-3 transition-transform duration-300 hover:scale-[1.02]"
             >
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFC928] shadow-lg">
-
-                <span className="text-sm font-black text-[#25283B]">
-                  BS
-                </span>
-
-              </div>
+              <img
+                src="/image/ngo/benevolent-souls-logo.jpeg"
+                alt="Benevolent Souls Foundation logo"
+                className="h-12 w-auto rounded-full shadow-lg"
+              />
 
               <div>
 
@@ -376,7 +387,9 @@ export default function Home() {
                 aria-controls="mobile-navigation-menu"
               >
                 <span className={`inline-block text-xl transition-transform duration-300 ${mobileMenuOpen ? "rotate-90" : "rotate-0"}`} aria-hidden="true">
-                  {mobileMenuOpen ? "×" : "☰"}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 12h18M3 6h18M3 18h18"/>
+                  </svg>
                 </span>
               </button>
 
@@ -622,9 +635,21 @@ export default function Home() {
               type="button"
               onClick={() => setShowEmergencyPopup(false)}
               aria-label={t("emergency.close")}
-              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center bg-[#25283B] text-xl text-white transition hover:bg-[#FFC928] hover:text-[#25283B]"
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center bg-[#25283B] text-white transition hover:bg-[#FFC928] hover:text-[#25283B]"
             >
-              ×
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
             </button>
 
             <p className="pr-10 text-xs font-bold uppercase tracking-[0.2em] text-[#B28A00]">
@@ -681,7 +706,7 @@ export default function Home() {
       ===================================================== */}
       <section
         id="about"
-        className="relative scroll-mt-28 overflow-hidden bg-[#FAF8F0] px-6 py-24 sm:px-10 lg:px-16 lg:py-32"
+        className="relative scroll-mt-[60px] max-lg:scroll-mt-[48px] overflow-hidden bg-[#FAF8F0] px-6 py-24 sm:px-10 lg:px-16 lg:py-32"
       >
         <div className="mx-auto max-w-[1350px]">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
@@ -832,7 +857,7 @@ export default function Home() {
 ===================================================== */}
       <section
         id="work"
-        className="scroll-mt-40 bg-white px-6 py-16 sm:px-10 lg:px-16 lg:py-20"
+        className="scroll-mt-[60px] max-lg:scroll-mt-[48px] bg-white px-6 py-16 sm:px-10 lg:px-16 lg:py-20"
       >
         <div className="mx-auto max-w-[1350px]">
 
@@ -876,8 +901,8 @@ export default function Home() {
 
               {/* NGO Animal Care Image */}
               <img
-                src="/image/ngo/community/ngo-community-03.jpeg"
-                alt="Volunteer holding a dog at Benevolent Souls Foundation"
+                src="/image/ngo/ngo-animal-care.jpeg"
+                alt="Animal care at Benevolent Souls Foundation"
                 className="absolute inset-0 h-full w-full object-contain object-center bg-[#36394F] transition-transform duration-700 group-hover:scale-[1.01]"
               />
 
@@ -913,7 +938,7 @@ export default function Home() {
                   <a
                     href="#media"
                     aria-label="Explore animal care media"
-                    className="relative z-20 hidden h-12 w-12 shrink-0 items-center justify-center border border-white/30 text-white transition duration-300 hover:bg-[#FFC928] hover:text-[#25283B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC928] sm:flex"
+                    className="relative z-20 flex h-12 w-12 shrink-0 items-center justify-center border border-[#FFC928] bg-[#FFC928] text-[#25283B] transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-[#FFD54F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC928]"
                   >
                     <span aria-hidden="true">→</span>
                   </a>
@@ -949,7 +974,7 @@ export default function Home() {
                   <a
                     href="#adoption"
                     aria-label="Explore adoption options"
-                    className="relative z-10 flex h-11 w-11 items-center justify-center border border-[#36394F]/20 text-[#36394F] transition-colors duration-300 hover:border-[#25283B] hover:bg-[#25283B] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25283B]"
+                    className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center border border-[#36394F]/30 bg-[#36394F] text-white transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:border-[#25283B] hover:bg-[#25283B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25283B]"
                   >
                     <span aria-hidden="true">→</span>
                   </a>
@@ -992,8 +1017,8 @@ export default function Home() {
 
               <div className="relative min-h-[300px] overflow-hidden">
                 <img
-                  src="/image/ngo/community/ngo-community-08.jpeg"
-                  alt="Volunteer sitting with a dog at Benevolent Souls Foundation"
+                  src="/image/ngo/community/ngo-community-01.jpeg"
+                  alt="Community and volunteer at Benevolent Souls Foundation"
                   className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
@@ -1100,16 +1125,191 @@ export default function Home() {
           {/* BOTTOM STATEMENT */}
 
           {/* SIDE FEATURE */}
+</div>
+      </section>
+
+      {/* =====================================================
+     MEET OUR TEAM
+===================================================== */}
+      <section
+        id="team"
+        className="bg-white px-6 py-16 sm:px-10 lg:px-16 lg:py-20"
+      >
+        <div className="mx-auto max-w-[1350px]">
+          <p className="text-center text-[11px] font-bold uppercase tracking-[0.28em] text-[#B28A00]">
+            {t("about.team")}
+          </p>
+          <h2 className="mt-4 text-center text-3xl font-bold text-[#36394F]">
+            {t("about.teamTitle")}
+          </h2>
+          <p className="mt-6 text-center text-lg leading-8 text-[#596172]">
+            {t("about.teamDesc")}
+          </p>
+
+          {/* TEAM GRID */}
+          <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Team member: Chaitanya Kulkarni */}
+            <article
+              key="team-chaitanya"
+              className="flex flex-col h-full border border-[#36394F]/10 bg-white rounded-xl shadow-sm transition-shadow hover:shadow-lg"
+            >
+              <button type="button" onClick={() => setSelectedTeamImage({ src: "/image/ngo/team/chaitanya-kulkarni.jpeg", alt: "Chaitanya Kulkarni" })} aria-label="View photo of Chaitanya Kulkarni" className="group block h-[320px] w-full shrink-0 overflow-hidden rounded-t-xl bg-[#F8F7F2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#C39A00]">
+                <img src="/image/ngo/team/chaitanya-kulkarni.jpeg" alt="Chaitanya Kulkarni" className="block h-full w-full object-contain object-center transition-transform duration-300 group-hover:scale-[1.02]" />
+              </button>
+              <div className="p-4 flex-1">
+                <h3 className="mb-1 text-lg font-bold text-[#25283B]">
+                  Chaitanya Kulkarni
+                </h3>
+                <p className="text-sm text-[#687080]">
+                  {t("about.teamMember.responsibility.preeti")}
+                </p>
+              </div>
+            </article>
+
+            {/* Team member: Padmini Khandekar */}
+            <article key="team-padmini" className="flex flex-col h-full border border-[#36394F]/10 bg-white rounded-xl shadow-sm transition-shadow hover:shadow-lg">
+              <button type="button" onClick={() => setSelectedTeamImage({ src: "/image/ngo/team/padmini-khandekar.jpeg", alt: "Padmini Khandekar" })} aria-label="View photo of Padmini Khandekar" className="group block h-[320px] w-full shrink-0 overflow-hidden rounded-t-xl bg-[#F8F7F2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#C39A00]">
+                <img src="/image/ngo/team/padmini-khandekar.jpeg" alt="Padmini Khandekar" className="block h-full w-full object-contain object-center transition-transform duration-300 group-hover:scale-[1.02]" />
+              </button>
+              <div className="p-4 flex-1">
+                <h3 className="mb-1 text-lg font-bold text-[#25283B]">Padmini Khandekar</h3>
+                <p className="text-sm text-[#687080]">Finance & Accounting</p>
+              </div>
+            </article>
+
+            {/* Team member: Preeti Bawase */}
+           {/* Team member: Preeti Bawase */}
+
+{/* Team member: Preeti Bawase */}
+<article
+  key="team-preeti"
+  className="flex flex-col overflow-hidden rounded-xl border border-[#36394F]/10 bg-white shadow-md"
+>
+  <button type="button" onClick={() => setSelectedTeamImage({ src: "/image/ngo/team/preeti-bawase.jpeg", alt: "Preeti Bawase" })} aria-label="View photo of Preeti Bawase" className="group block h-[320px] w-full shrink-0 overflow-hidden rounded-t-xl bg-[#F8F7F2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#C39A00]">
+    <img src="/image/ngo/team/preeti-bawase.jpeg" alt="Preeti Bawase" className="block h-full w-full object-contain object-center transition-transform duration-300 group-hover:scale-[1.02]" />
+  </button>
+
+  <div className="p-4">
+    <h3 className="mb-1 text-lg font-bold text-[#25283B]">
+      Preeti Bawase
+    </h3>
+    <p className="text-sm text-[#687080]">
+      Social Media &amp; Fundraising Programs
+    </p>
+  </div>
+</article>
+
+
+    {/* Team member: Rushabh Jangade */}
+<article
+  key="team-rushabh"
+  className="flex flex-col h-full overflow-hidden border border-[#36394F]/10 bg-white rounded-xl shadow-sm transition-shadow hover:shadow-lg"
+>
+  <button type="button" onClick={() => setSelectedTeamImage({ src: "/image/ngo/team/rushabh-jangade.jpeg", alt: "Rushabh Jangade" })} aria-label="View photo of Rushabh Jangade" className="group block h-[320px] w-full shrink-0 overflow-hidden rounded-t-xl bg-[#F8F7F2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#C39A00]">
+    <img src="/image/ngo/team/rushabh-jangade.jpeg" alt="Rushabh Jangade" className="block h-full w-full object-contain object-center transition-transform duration-300 group-hover:scale-[1.02]" />
+  </button>
+
+  <div className="p-4 flex-1">
+    <h3 className="mb-1 text-lg font-bold text-[#25283B]">
+      Rushabh Jangade
+    </h3>
+    <p className="text-sm text-[#687080]">
+      Finance &amp; Accounting
+    </p>
+  </div>
+</article>
+
+
+            {/* Team member: Sudhir Talwalkar */}
+           
+<article
+  key="team-sudhir"
+  className="flex flex-col h-full overflow-hidden border border-[#36394F]/10 bg-white rounded-xl shadow-sm transition-shadow hover:shadow-lg"
+>
+  <button type="button" onClick={() => setSelectedTeamImage({ src: "/image/ngo/team/sudhir-talwalkar.jpeg", alt: "Sudhir Talwalkar" })} aria-label="View photo of Sudhir Talwalkar" className="group block h-[320px] w-full shrink-0 overflow-hidden rounded-t-xl bg-[#F8F7F2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#C39A00]">
+    <img src="/image/ngo/team/sudhir-talwalkar.jpeg" alt="Sudhir Talwalkar" className="block h-full w-full object-contain object-center transition-transform duration-300 group-hover:scale-[1.02]" />
+  </button>
+
+  <div className="p-4 flex-1">
+    <h3 className="mb-1 text-lg font-bold text-[#25283B]">
+      Sudhir Talwalkar
+    </h3>
+    <p className="text-sm text-[#687080]">
+      Finance &amp; Accounting
+    </p>
+  </div>
+</article>
+
+            {/* Volunteer Community */}
+            <article
+              key="team-volunteers"
+              className="flex h-full flex-col overflow-hidden rounded-xl border border-[#36394F]/10 bg-white shadow-sm transition-shadow hover:shadow-lg"
+            >
+              <div className="flex h-[320px] w-full items-center justify-center bg-[#F8F7F2]">
+                <div className="text-center">
+                  <p className="text-6xl font-bold tracking-tight text-[#25283B] sm:text-7xl">
+                    50+
+                  </p>
+                  <p className="mt-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#B28A00]">
+                    Volunteers
+                  </p>
+                </div>
+              </div>
+              <div className="p-4">
+                <h3 className="mb-1 text-lg font-bold text-[#25283B]">
+                  Our Volunteer Community
+                </h3>
+                <p className="text-sm text-[#687080]">
+                  United by compassion for animal welfare.
+                </p>
+              </div>
+            </article>
+
+          </div>
         </div>
       </section>
 
+      {selectedTeamImage && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-[#171927]/90 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Photo of ${selectedTeamImage.alt}`}
+          onClick={() => setSelectedTeamImage(null)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setSelectedTeamImage(null);
+          }}
+          tabIndex={-1}
+        >
+          <button
+            type="button"
+            onClick={() => setSelectedTeamImage(null)}
+            aria-label="Close photo"
+            className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#25283B] shadow-lg transition hover:bg-[#FFC928] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+          <img
+            src={selectedTeamImage.src}
+            alt={selectedTeamImage.alt}
+            onClick={(event) => event.stopPropagation()}
+            className="max-h-[85vh] max-w-[92vw] rounded-lg object-contain shadow-2xl"
+          />
+          <p className="absolute bottom-4 left-4 right-4 text-center text-sm font-semibold text-white">
+            {selectedTeamImage.alt}
+          </p>
+        </div>
+      )}
 
-      {/* =====================================================
+      {/*
+=====================================================
     ADOPTION
 ===================================================== */}
       <section
         id="adoption"
-        className="scroll-mt-28 bg-[#FAF8F0] px-6 pt-16 pb-8 sm:px-10 sm:pt-20 sm:pb-10 lg:px-16 lg:pt-24 lg:pb-10"      >
+        className="scroll-mt-[60px] max-lg:scroll-mt-[48px] bg-[#FAF8F0] px-6 pt-16 pb-8 sm:px-10 sm:pt-20 sm:pb-10 lg:px-16 lg:pt-24 lg:pb-10"      >
         <div className="mx-auto max-w-[1350px]">
 
           {/* HEADER */}
@@ -1415,7 +1615,7 @@ export default function Home() {
 ===================================================== */}
       <section
         id="media"
-        className="scroll-mt-28 bg-[#FAF8F0] px-6 pt-24 pb-16 sm:px-10 lg:px-16 lg:pt-32 lg:pb-20"
+        className="scroll-mt-[60px] max-lg:scroll-mt-[48px] bg-[#FAF8F0] px-6 pt-24 pb-16 sm:px-10 lg:px-16 lg:pt-32 lg:pb-20"
       >
         <div className="mx-auto max-w-[1350px]">
 
@@ -1600,7 +1800,7 @@ export default function Home() {
 ===================================================== */}
       <section
         id="donate"
-        className="scroll-mt-28 relative overflow-hidden bg-[#FFC928] px-6 py-24 sm:px-10 lg:px-16 lg:py-32"
+        className="scroll-mt-[60px] max-lg:scroll-mt-[48px] relative overflow-hidden bg-[#FFC928] px-6 py-24 sm:px-10 lg:px-16 lg:py-32"
       >
         {/* Decorative circles */}
 
@@ -1729,7 +1929,7 @@ export default function Home() {
       {/* CONTACT SECTION */}
       <section
         id="contact"
-        className="scroll-mt-28 bg-[#25283B] px-6 py-20 sm:px-8 lg:px-12 lg:py-28"
+        className="scroll-mt-[60px] max-lg:scroll-mt-[48px] bg-[#25283B] px-6 py-20 sm:px-8 lg:px-12 lg:py-28"
       >
         <div className="mx-auto max-w-7xl">
 
@@ -2016,14 +2216,11 @@ export default function Home() {
                 className="inline-flex items-center gap-3"
               >
 
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFC928]">
-
-                  <span className="text-sm font-black text-[#25283B]">
-                    BS
-                  </span>
-
-                </div>
-
+                <img
+                  src="/image/ngo/benevolent-souls-logo.jpeg"
+                  alt="Benevolent Souls Foundation logo"
+                  className="h-12 w-auto rounded-full"
+                />
 
                 <div>
 
@@ -2266,15 +2463,14 @@ export default function Home() {
           </div>
 
 
+
+          
           {/* =================================================
-        CONTACT CTA STRIP
-    ================================================= */}
+              CONTACT CTA STRIP
+          ================================================= */}
           <div className="mt-16 border-y border-white/10 py-7">
-
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-
               <div>
-
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FFC928]">
                   {t("footer.haveQuestion")}
                 </p>
@@ -2282,40 +2478,27 @@ export default function Home() {
                 <p className="mt-2 text-lg font-bold text-white">
                   {t("footer.loveToHear")}
                 </p>
-
               </div>
-
 
               <a
                 href="#contact"
                 className="flex w-fit items-center gap-4 bg-white px-6 py-3.5 text-sm font-bold text-[#25283B] transition duration-300 hover:bg-[#FFC928]"
               >
-
                 {t("footer.contactNgo")}
-
-                <span>
-                  →
-                </span>
-
+                <span aria-hidden="true">→</span>
               </a>
-
             </div>
-
           </div>
 
-
           {/* =================================================
-        FOOTER BOTTOM
-    ================================================= */}
+              FOOTER BOTTOM
+          ================================================= */}
           <div className="mt-7 flex flex-col gap-4 text-xs text-white/30 sm:flex-row sm:items-center sm:justify-between">
-
             <p>
               © 2026 Benevolent Souls Foundation. {t("footer.allRights")}
             </p>
 
-
             <div className="flex gap-6">
-
               <a
                 href="#"
                 className="transition hover:text-white"
@@ -2329,14 +2512,12 @@ export default function Home() {
               >
                 {t("footer.terms")}
               </a>
-
             </div>
-
           </div>
 
         </div>
-
       </footer>
-    </main >
+      </main>
+    </>
   );
 }

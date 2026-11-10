@@ -29,6 +29,8 @@ export default function AdminAdoptionPage() {
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [successMessage, setSuccessMessage] = useState("");
@@ -152,6 +154,45 @@ export default function AdminAdoptionPage() {
 
     setSuccessMessage(`Enquiry status changed to ${newStatus}.`);
     setUpdatingId(null);
+  }
+
+  async function deleteEnquiry(enquiryId: number) {
+    setDeletingId(enquiryId);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    const { data, error } = await supabase
+      .from("adoption_enquiries")
+      .delete()
+      .eq("id", enquiryId)
+      .select("id")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Failed to delete adoption enquiry:", error);
+      setErrorMessage(
+        "Could not delete this enquiry. Check your Supabase permissions and try again."
+      );
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+      return;
+    }
+
+    if (!data) {
+      setErrorMessage(
+        "The enquiry was not deleted. It may no longer exist or your Supabase permissions do not allow deletion."
+      );
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+      return;
+    }
+
+    setEnquiries((current) =>
+      current.filter((enquiry) => enquiry.id !== enquiryId)
+    );
+    setSuccessMessage("Adoption enquiry deleted successfully.");
+    setDeletingId(null);
+    setConfirmDeleteId(null);
   }
 
   function getStatusClasses(status: string) {
@@ -509,6 +550,18 @@ export default function AdminAdoptionPage() {
                           {currentStatus === "rejected" ? "✓ Rejected" : "Reject"}
                         </button>
 
+                        <button
+                          type="button"
+                          disabled={
+                            updatingId === enquiry.id ||
+                            deletingId === enquiry.id
+                          }
+                          onClick={() => setConfirmDeleteId(enquiry.id)}
+                          className="border border-red-200 bg-white px-4 py-3 text-xs font-bold uppercase tracking-[0.1em] text-red-700 transition hover:border-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+
                         {updatingId === enquiry.id && (
                           <span className="self-center text-xs text-gray-500">
                             Saving decision...
@@ -523,6 +576,102 @@ export default function AdminAdoptionPage() {
           )}
         </section>
       </section>
+
+      {confirmDeleteId !== null && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#171B2B]/65 px-4 py-6 backdrop-blur-sm"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && deletingId === null) {
+              setConfirmDeleteId(null);
+            }
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-enquiry-title"
+            className="w-full max-w-md border border-gray-100 bg-white p-6 shadow-2xl sm:p-8"
+          >
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-6 w-6"
+                aria-hidden="true"
+              >
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="m19 6-1 14H6L5 6" />
+                <path d="M10 11v5M14 11v5" />
+              </svg>
+            </div>
+
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-red-600">
+              Delete application
+            </p>
+            <h2
+              id="delete-enquiry-title"
+              className="mt-2 text-xl font-bold text-[#25283B]"
+            >
+              Are you sure?
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-gray-600">
+              This adoption enquiry will be permanently deleted. You cannot
+              undo this action.
+            </p>
+
+            <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                disabled={deletingId !== null}
+                onClick={() => setConfirmDeleteId(null)}
+                className="border border-gray-200 px-5 py-3 text-xs font-bold uppercase tracking-[0.1em] text-gray-600 transition hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingId !== null}
+                onClick={() => void deleteEnquiry(confirmDeleteId)}
+                className="bg-red-600 px-5 py-3 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deletingId === confirmDeleteId ? "Deleting..." : "Yes, Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {successMessage && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-6 right-6 z-[110] flex max-w-[calc(100%-3rem)] items-center gap-3 border border-green-200 bg-white px-5 py-4 shadow-xl"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              className="h-5 w-5"
+              aria-hidden="true"
+            >
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </span>
+          <div>
+            <p className="text-sm font-bold text-[#25283B]">Success</p>
+            <p className="mt-0.5 text-sm text-gray-600">
+              {successMessage}
+            </p>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

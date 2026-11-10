@@ -28,6 +28,7 @@ export default function AdminAnimalsPage() {
 
     const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [removeImage, setRemoveImage] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -89,6 +90,17 @@ export default function AdminAnimalsPage() {
     const clearSelectedImage = () => {
         setSelectedImageFile(null);
         setImagePreview(null);
+        setRemoveImage(false);
+
+        if (imageInputRef.current) {
+            imageInputRef.current.value = "";
+        }
+    };
+
+    const removeCurrentImage = () => {
+        setSelectedImageFile(null);
+        setImagePreview(null);
+        setRemoveImage(true);
 
         if (imageInputRef.current) {
             imageInputRef.current.value = "";
@@ -105,7 +117,7 @@ export default function AdminAnimalsPage() {
 
         setSavingEdit(true);
 
-        let updatedImageUrl = editingAnimal.image_url ?? "";
+        let updatedImageUrl = removeImage ? "" : (editingAnimal.image_url ?? "");
 
         // Upload a new image only if one has been selected.
         if (selectedImageFile) {
@@ -142,7 +154,7 @@ export default function AdminAnimalsPage() {
             species: editingAnimal.species,
             age: editingAnimal.age,
             gender: editingAnimal.gender,
-            image_url: updatedImageUrl,
+            image_url: updatedImageUrl || null,
             description: editingAnimal.description ?? "",
             status: editingAnimal.status,
         };
@@ -360,40 +372,47 @@ export default function AdminAnimalsPage() {
 
                                         setImagePreview(URL.createObjectURL(file));
                                         setSelectedImageFile(file);
+                                        setRemoveImage(false);
                                     }}
                                 />
 
-                                <div className="mt-2 border border-gray-200 p-4">
-                                    {(imagePreview || editingAnimal.image_url) && (
-                                        <img
-                                            src={
-                                                imagePreview ||
-                                                editingAnimal.image_url ||
-                                                ""
-                                            }
-                                            alt={`${editingAnimal.name} preview`}
-                                            className="mb-4 h-48 w-full object-cover"
-                                        />
-                                    )}
+                                <div className="mt-2 rounded-lg border border-gray-200 bg-white p-4">
+                                    <div className="flex min-h-[320px] w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-[#F8F9FA] p-3">
+                                        {(imagePreview || (editingAnimal.image_url && !removeImage)) ? (
+                                            <img
+                                                src={imagePreview || editingAnimal.image_url || ""}
+                                                alt={`${editingAnimal.name} preview`}
+                                                className="max-h-[420px] max-w-full object-contain"
+                                            />
+                                        ) : (
+                                            <p className="text-sm text-gray-400">No image selected</p>
+                                        )}
+                                    </div>
 
-                                    <div className="flex flex-wrap items-center gap-3">
+                                    <div className="mt-4 flex flex-wrap items-center gap-3">
                                         <button
                                             type="button"
-                                            onClick={() =>
-                                                imageInputRef.current?.click()
-                                            }
+                                            onClick={() => imageInputRef.current?.click()}
                                             className="bg-[#25283B] px-5 py-3 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[#FFC928] hover:text-[#25283B]"
                                         >
-                                            {selectedImageFile
-                                                ? "Change Image"
-                                                : "Choose Image"}
+                                            {selectedImageFile ? "Change Image" : "Choose Image"}
                                         </button>
+
+                                        {(editingAnimal.image_url || imagePreview) && !removeImage && (
+                                            <button
+                                                type="button"
+                                                onClick={removeCurrentImage}
+                                                className="border border-red-600 px-5 py-3 text-xs font-bold uppercase tracking-[0.1em] text-red-600 transition hover:bg-red-600 hover:text-white"
+                                            >
+                                                Remove Image
+                                            </button>
+                                        )}
 
                                         {selectedImageFile && (
                                             <button
                                                 type="button"
                                                 onClick={clearSelectedImage}
-                                                className="border border-red-600 px-5 py-3 text-xs font-bold uppercase tracking-[0.1em] text-red-600 transition hover:bg-red-600 hover:text-white"
+                                                className="border border-gray-400 px-5 py-3 text-xs font-bold uppercase tracking-[0.1em] text-gray-600 transition hover:bg-gray-100"
                                             >
                                                 Cancel New Image
                                             </button>
@@ -448,8 +467,9 @@ export default function AdminAnimalsPage() {
                             </div>
                         </div>
 
-                        {/* Buttons */}
-                        <div className="mt-8 flex flex-wrap gap-3">
+                        {/* Save Actions */}
+                        <div className="mt-8 border-t border-gray-200 pt-6">
+                            <div className="flex flex-wrap gap-3">
                             <button
                                 type="button"
                                 onClick={saveEditedAnimal}
@@ -467,6 +487,7 @@ export default function AdminAnimalsPage() {
                             >
                                 Cancel
                             </button>
+                            </div>
                         </div>
                     </div>
                 ) : (

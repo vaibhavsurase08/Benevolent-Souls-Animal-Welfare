@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -88,9 +89,14 @@ export default function AdminLoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#25283B] px-6 py-10">
       <div className="w-full max-w-md">
+
         <div className="mb-10 text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#FFC928]">
-            <span className="text-2xl">🐾</span>
+          <div className="mx-auto mb-5 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full">
+            <img
+              src="/image/ngo/benevolent-souls-logo.jpeg"
+              alt="Benevolent Souls Foundation Logo"
+              className="h-full w-full scale-[1.22] object-cover"
+            />
           </div>
 
           <h1 className="text-3xl font-bold text-white">
@@ -104,6 +110,7 @@ export default function AdminLoginPage() {
 
         <div className="bg-white p-8 shadow-2xl sm:p-10">
           <form onSubmit={handleLogin} className="space-y-6">
+
             <div>
               <label
                 htmlFor="admin-email"

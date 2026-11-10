@@ -34,6 +34,36 @@ const UPI_ID = "9673987994-1@okbizaxis";
 const UPI_LINK = `upi://pay?pa=${UPI_ID}&pn=Benevolent%20Souls%20Foundation`;
 const QUICK_AMOUNTS = [100, 250, 500, 1000];
 
+const IMPACT_AREAS = [
+  {
+    title: "Food & Nutrition",
+    text: "Help provide nutritious food and clean drinking water for animals in need.",
+    path: "M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7",
+  },
+  {
+    title: "Medical Care",
+    text: "Support veterinary consultations, medicines, wound treatment, and recovery care.",
+    path: "M12 5v14M5 12h14",
+  },
+  {
+    title: "Rescue & Shelter",
+    text: "Help support rescue-related expenses, temporary shelter, and essential supplies for vulnerable animals.",
+    path: "M3 10.5 12 3l9 7.5V21H3z",
+  },
+  {
+    title: "Adoption & Rehabilitation",
+    text: "Help animals recover and prepare for a safer life with responsible adopters.",
+    path: "M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z",
+  },
+];
+
+const AMOUNT_NOTES: Record<number, string> = {
+  100: "A small act of kindness",
+  250: "Support for essential animal-care supplies",
+  500: "A contribution towards animal welfare needs",
+  1000: "Greater support for rescue and care activities",
+};
+
 export default function DonatePage() {
   const [form, setForm] = useState<DonationForm>(initialForm);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -41,9 +71,7 @@ export default function DonatePage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [showQrModal, setShowQrModal] = useState(false);
-  const [copyFeedback, setCopyFeedback] = useState<
-    Record<CopyField, string>
-  >({
+  const [copyFeedback, setCopyFeedback] = useState<Record<CopyField, string>>({
     account: "",
     ifsc: "",
   });
@@ -238,7 +266,80 @@ export default function DonatePage() {
         </p>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8 lg:px-10">
+      {/* =================================================
+          DONATION INTRODUCTION
+      ================================================= */}
+      <section className="mx-auto max-w-7xl px-5 pb-10 sm:px-8 lg:px-10">
+        <div className="rounded-xl bg-white p-8 shadow-lg sm:p-12">
+          <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.28em] text-[#B28A00]">
+            Why give
+          </p>
+          <h2 className="mb-4 text-3xl font-bold text-[#36394F] sm:text-4xl">
+            Every Contribution Gives an Animal a Better Chance
+          </h2>
+          <p className="mb-6 max-w-2xl text-lg leading-relaxed text-[#596172]">
+            Many stray animals face hunger, injuries, illness, and unsafe
+            living conditions. Your support can help provide food, veterinary
+            treatment, emergency rescue assistance, and opportunities for
+            animals to find loving homes.
+          </p>
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <a
+              href="#donation-form"
+              className="inline-flex items-center gap-2 bg-[#FFC928] px-6 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[#25283B] transition hover:bg-[#C39A00]"
+            >
+              Donate Now →
+            </a>
+            <button
+              type="button"
+              onClick={() => setShowQrModal(true)}
+              className="inline-flex items-center gap-2 bg-[#25283B] px-6 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[#36394F]"
+            >
+              Scan UPI QR →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* =================================================
+          WHY YOUR DONATION MATTERS
+      ================================================= */}
+      <section className="mx-auto max-w-7xl px-5 pb-10 sm:px-8 lg:px-10">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {IMPACT_AREAS.map((item) => (
+            <div key={item.title}>
+              <div className="mb-3 flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#FFC928]">
+                  <svg
+                    className="h-5 w-5 text-[#36394F]"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d={item.path} />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="mb-2 text-xl font-bold text-[#36394F]">
+                {item.title}
+              </h3>
+              <p className="text-sm text-[#687080]">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* =================================================
+          DONATION FORM + PAYMENT OPTIONS
+      ================================================= */}
+      <section
+        id="donation-form"
+        className="mx-auto max-w-7xl scroll-mt-6 px-5 pb-20 sm:px-8 lg:px-10"
+      >
         <div className="grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-10">
           <aside className="rounded-2xl bg-[#25283B] p-6 text-white shadow-xl sm:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#FFC928]">
@@ -262,9 +363,7 @@ export default function DonatePage() {
             >
               <option value="">Select a method</option>
               <option value="UPI">UPI — Scan QR code</option>
-              <option value="Bank Transfer">
-                Bank Transfer — HDFC Bank
-              </option>
+              <option value="Bank Transfer">Bank Transfer — HDFC Bank</option>
               <option value="Online Payment">
                 Online Payment — not configured
               </option>
@@ -277,7 +376,7 @@ export default function DonatePage() {
               </p>
             )}
 
-            {isUPI && (
+            {(!form.payment_method || isUPI) && (
               <div className="mt-7 rounded-xl border border-white/15 bg-white/5 p-5 sm:p-6">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFC928]">
                   Scan to donate
@@ -407,9 +506,7 @@ export default function DonatePage() {
                       </code>
                       <button
                         type="button"
-                        onClick={() =>
-                          copyToClipboard(bankDetails.ifsc, "ifsc")
-                        }
+                        onClick={() => copyToClipboard(bankDetails.ifsc, "ifsc")}
                         className="rounded border border-white/25 px-3 py-1.5 text-xs font-semibold hover:bg-white/10"
                       >
                         {copyFeedback.ifsc || "Copy"}
@@ -425,13 +522,12 @@ export default function DonatePage() {
               </div>
             )}
 
-            {!isUPI && !isBankTransfer && (
+            {(form.payment_method === "Online Payment" ||
+              form.payment_method === "Other") && (
               <div className="mt-7 rounded-xl border border-white/10 bg-white/5 p-5 text-sm leading-6 text-white/65">
                 {form.payment_method === "Online Payment"
                   ? "Online payment is not configured yet. Please select UPI or Bank Transfer, or contact the foundation."
-                  : form.payment_method === "Other"
-                    ? "Please contact Benevolent Souls Foundation directly to arrange another donation method."
-                    : "Select a payment method to view the relevant payment details."}
+                  : "Please contact Benevolent Souls Foundation directly to arrange another donation method."}
               </div>
             )}
 
@@ -547,8 +643,7 @@ export default function DonatePage() {
                     htmlFor="amount"
                     className="text-xs font-bold uppercase tracking-[0.12em] text-[#36394F]"
                   >
-                    Donation amount (₹){" "}
-                    <span className="text-red-600">*</span>
+                    Donation amount (₹) <span className="text-red-600">*</span>
                   </label>
 
                   <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -667,9 +762,228 @@ export default function DonatePage() {
 
               <p className="text-xs leading-5 text-[#20222B]/55">
                 Fields marked with * are required. Your information will be
-                submitted to the foundation's donation records.
+                submitted to the foundation&apos;s donation records.
               </p>
             </form>
+          </div>
+        </div>
+      </section>
+
+      {/* =================================================
+          WHERE YOUR DONATION CAN HELP
+      ================================================= */}
+      <section className="mx-auto max-w-7xl px-5 pb-10 sm:px-8 lg:px-10">
+        <div className="rounded-xl border border-[#36394F]/10 bg-white p-6 sm:p-8">
+          <h3 className="mb-4 text-xl font-bold text-[#36394F]">
+            Where Your Donation Can Help
+          </h3>
+          <ul className="space-y-3 text-sm text-[#596170]">
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Food and water
+              </span>{" "}
+              - Support daily nourishment for animals in our care.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Veterinary treatment and medicines
+              </span>{" "}
+              - Cover medical consultations, prescriptions, and wound care.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Emergency rescue expenses
+              </span>{" "}
+              - Fund rescues for animals in urgent, life-threatening
+              situations.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Temporary shelter and essential supplies
+              </span>{" "}
+              - Provide safe, temporary housing and necessities.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Recovery and adoption support
+              </span>{" "}
+              - Help animals heal and prepare for adoption into responsible
+              homes.
+            </li>
+          </ul>
+          <div className="mt-5 border-t border-[#E5E7EB] pt-5 text-xs text-[#6B7280]">
+            <p>
+              Donations are intended to support animal welfare activities.
+              Actual allocation depends on current needs, available resources,
+              and the foundation&apos;s operating arrangements. Please contact
+              us if you need information about a specific contribution.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* =================================================
+          EVERY CONTRIBUTION COUNTS
+      ================================================= */}
+      <section className="mx-auto max-w-7xl px-5 pb-10 sm:px-8 lg:px-10">
+        <div className="rounded-xl border border-[#36394F]/10 bg-white p-6 sm:p-8">
+          <h3 className="mb-4 text-xl font-bold text-[#36394F]">
+            Every Contribution Counts
+          </h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {QUICK_AMOUNTS.map((amount) => (
+              <div
+                key={amount}
+                className="rounded-lg bg-[#25283B] p-4 text-center"
+              >
+                <p className="text-xl font-bold text-[#FFC928]">
+                  ₹{amount.toLocaleString("en-IN")}
+                </p>
+                <p className="mt-1 text-xs text-white/70">
+                  {AMOUNT_NOTES[amount]}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-[#20222B]/60">
+            These amounts are illustrative suggestions only. Enter a custom
+            amount in the form or contact us for specific allocation questions.
+          </p>
+        </div>
+      </section>
+
+      {/* =================================================
+          HOW TO DONATE
+      ================================================= */}
+      <section className="mx-auto max-w-7xl px-5 pb-10 sm:px-8 lg:px-10">
+        <div className="rounded-xl bg-white p-8 shadow-lg sm:p-10">
+          <h3 className="mb-4 text-xl font-bold text-[#36394F]">
+            How to Donate
+          </h3>
+          <ol className="list-outside list-decimal space-y-3 pl-5 text-sm text-[#596170]">
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Choose or enter a donation amount.
+              </span>{" "}
+              Use the quick amount buttons or enter a custom amount in the
+              form field.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Scan the official donation QR code or use the UPI option.
+              </span>{" "}
+              The QR code can be scanned with any UPI-enabled payment app.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Complete the payment in your chosen payment application.
+              </span>{" "}
+              Verify the recipient name &quot;Benevolent Souls Foundation&quot;
+              before confirming.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Enter the transaction details requested by the form.
+              </span>{" "}
+              Provide your name, email, phone, and optional transaction ID
+              after payment.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Submit the donation information for review.
+              </span>{" "}
+              Your details will be recorded in the foundation&apos;s donation
+              records. Note: submitting the form does not automatically verify
+              or confirm payment.
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      {/* =================================================
+          DONATION TRANSPARENCY AND TRUST
+      ================================================= */}
+      <section className="mx-auto max-w-7xl px-5 pb-10 sm:px-8 lg:px-10">
+        <div className="rounded-xl border border-[#36394F]/10 bg-white p-6 sm:p-8">
+          <h3 className="mb-4 text-xl font-bold text-[#36394F]">
+            Donation Transparency &amp; Trust
+          </h3>
+          <ul className="space-y-2 text-sm text-[#596170]">
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Responsible use of contributions.
+              </span>{" "}
+              Every donation is tracked and allocated toward the
+              foundation&apos;s animal welfare mission.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Accurate donation records.
+              </span>{" "}
+              Submitted information is stored in our donation records for
+              future reference and reporting.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Appropriate review of submitted transaction information.
+              </span>{" "}
+              The foundation may verify transaction details and reach out if
+              additional information is needed.
+            </li>
+            <li>
+              <span className="font-medium text-[#36394F]">
+                Clear communication when donors have questions.
+              </span>{" "}
+              Contact us if you have questions about your donation — we&apos;re
+              here to help.
+            </li>
+          </ul>
+          <p className="mt-4 text-xs text-[#20222B]/60">
+            <strong>Note:</strong> Donations support animal welfare activities.
+            We do not currently claim tax-deductibility or government
+            registration unless verified from official documentation. Please
+            contact us for any specific questions about contribution usage.
+          </p>
+        </div>
+      </section>
+
+      {/* =================================================
+          FAQ
+      ================================================= */}
+      <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8 lg:px-10">
+        <div className="rounded-xl bg-white p-8 shadow-lg sm:p-10">
+          <h3 className="mb-6 text-xl font-bold text-[#36394F]">
+            Frequently Asked Questions
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <p className="text-base font-medium text-[#36394F]">
+                Why should I donate?
+              </p>
+              <p className="mt-1 text-sm text-[#687080]">
+                Your contribution can help support food, medical care, rescue
+                assistance, shelter supplies, and other animal welfare needs.
+              </p>
+            </div>
+            <div>
+              <p className="text-base font-medium text-[#36394F]">
+                Can I donate a small amount?
+              </p>
+              <p className="mt-1 text-sm text-[#687080]">
+                Yes. Contributions of different sizes can help support the
+                foundation&apos;s work.
+              </p>
+            </div>
+            <div>
+              <p className="text-base font-medium text-[#36394F]">
+                How can I donate?
+              </p>
+              <p className="mt-1 text-sm text-[#687080]">
+                Use the payment methods on this page — scan the QR code with
+                your UPI app, use the UPI link, or choose bank transfer. Then
+                fill in the donation form with your details.
+              </p>
+            </div>
           </div>
         </div>
       </section>

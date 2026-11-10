@@ -206,6 +206,27 @@ export default function AdminDashboard() {
                         </div>
                     </button>
 
+                    {/* Edit Team Members */}
+                    <button
+                        type="button"
+                        onClick={() => router.push("/admin/team")}
+                        className="group w-full bg-white p-7 text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC928]"
+                    >
+                        <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#FFC928] text-[#25283B]">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="h-6 w-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-bold text-[#25283B]">Edit Team Members</h3>
+                        <p className="mt-2 text-sm text-gray-500">Manage team member names, photos, roles, and responsibilities.</p>
+                        <div className="mt-6 text-xs font-bold uppercase tracking-[0.12em] text-[#25283B] transition group-hover:text-[#B88900]">
+                            Edit Team →
+                        </div>
+                    </button>
+
                     {/* Public Website */}
                     <button
                         type="button"
